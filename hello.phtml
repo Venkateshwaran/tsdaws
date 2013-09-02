@@ -1,0 +1,291 @@
+<?php
+//<div class="welcome-msg">
+//<p class="hello"><strong>
+
+require_once('chargebee-php-1.2.3/lib/ChargeBee.php');
+//require_once('\C:\chargebee-php-master\ChargeBee.php');
+//require 'ChargeBee.php';
+/**
+ * Magento
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Academic Free License (AFL 3.0)
+ * that is bundled with this package in the file LICENSE_AFL.txt.
+ * It is also available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/afl-3.0.php
+ * If you did not receive a copy of the license and are unable to
+ * obtain it through the world-wide-web, please send an email
+ * to license@magentocommerce.com so we can send you a copy immediately.
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade Magento to newer
+ * versions in the future. If you wish to customize Magento for your
+ * needs please refer to http://www.magentocommerce.com for more information.
+ *
+ * @category    design
+ * @package     base_default
+ * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @license     http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
+ */
+//$customer = Mage::getSingleton('core/resource')->getConnection('core_write');
+//if($customer = Mage::getSingleton('customer/session')->isLoggedIn()) {
+  //  $customerData = Mage::getModel('customer/customer')->load($customer->getId())->getData();
+    //print_r($customerData);
+//
+?>
+<!--Load the Ajax API-->
+    <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+<div class="welcome-msg">
+<p class="hello"><strong>
+<?php
+$id=$this->getId();
+$sgc = Mage::getSingleton('customer/session')->getCustomer();
+//echo "kkk-".$sgc->getEntityId()."8888888888888888888888888";
+//$id=$sgc->getEntityId();
+$email= $sgc->getEmail();
+$name = $sgc -> getName();
+$startdate= time();
+//$email="ajs@adfghgfhg.com";
+$enddate = time ( ) + (30 * 24 *60*60);
+//$name= "manjesh kumarsdfsd";
+//$id=1000;
+
+//mysql login
+	$db_hostname = 'localhost';
+	$db_database = 'geckotsd';	
+	$db_username = 'root';
+	$db_password = 'semester123';
+// connect to testsitedaily db
+        $db_server = mysql_connect($db_hostname, $db_username, $db_password);
+        if (!$db_server) die("Unable to connect to MySQL: " . mysql_error());
+        mysql_select_db($db_database)
+        or die("Unable to select database: " . mysql_error());
+	$email = mysql_real_escape_string($email);
+
+	$query_to_check_subscription_status="Select COUNT(*) as total_count from subscribed_customers where email='$email'";
+        $sub_result = mysql_query($query_to_check_subscription_status);
+        if (!$sub_result) die ("Database access failed: " . mysql_error());
+	$row = mysqli_fetch_object($sub_result);
+	$is_subs= $row->total_count;
+if($is_subs==0)
+
+{ChargeBee_Environment::configure("testsitedaily-test","MjcuT8DoBoEL2IWLoTjgeUoUJ66OvUpsd");
+
+
+$result = ChargeBee_Subscription::create(array(
+  "id"=>$id,
+  "planId" => "tsd", 
+  "customer" => array(
+    "email" => $email, 
+    "firstName" => $fname, 
+    "lastName" => $lname,
+    "trial_start"=> $startdate,
+    "trial_end"=> $enddate
+  )));
+  
+$subscription = $result->subscription();
+
+$customer = $result->customer();
+$card = $result->card(); 
+//$id=$this->getId();
+//$sgc = Mage::getSingleton('customer/session')->getCustomer();
+//echo "kkk-".$sgc->getEntityId()."8888888888888888888888888";
+
+$id=$sgc->getEntityId();
+//echo $id;
+echo $email;
+}
+
+// query for super account script ids
+if($id==2)
+{
+	 $query = "select script_id from selenium_scripts";
+        $result = mysql_query($query);
+        if (!$result) die ("Database access failed: " . mysql_error());
+}
+else{
+// query for script ids
+        $query = "select script_id from selenium_scripts where customer_id=".$id;
+        $result = mysql_query($query);
+        if (!$result) die ("Database access failed: " . mysql_error());
+}
+// number of rows returned
+        $rows = mysql_num_rows($result);
+//echo $rows;
+if($rows==0)
+{
+	echo " </br>Welcome to the family! We are processing your request and your script will be ready shortly.</br></br>";
+}
+for ($j = 0 ; $j < $rows ; ++$j)
+{
+        $row = mysql_fetch_row($result);
+//        var_dump($row);
+	echo $row[0];
+
+  	$queryforgraph = mysql_query("SELECT SUBSTRING(lastsampleat,1,CHAR_LENGTH(lastsampleat)-8) AS lastsampleat,avguptimeweek FROM selenium_script_data where selenium_id='".$row[0]."' order by lastsampleat ASC");
+       $resultforgraph = mysql_fetch_row($queryforgraph);
+	$queryfordata = "select lastsampleat,generalstatus,lasterrorat,avguptimeweek,avgLoadtimeday from selenium_script_data where selenium_id='".$row[0]."' order by sno DESC";
+	$resultqfd = mysql_query($queryfordata);
+     
+
+$rowsgraph = array();
+//flag is not needed
+$flaggraph = true;
+$tablegraph = array();
+$tablegraph['cols'] = array(
+
+    // Labels for your chart, these represent the column titles
+    // Note that one column is in "string" format and another one is in "number" format as pie chart only required "numbers" for calculating percentage and string will be used for column title
+    array('label' => 'Date', 'type' => 'string'),
+    array('label' => 'Percentage', 'type' => 'number')
+
+);
+
+$rowsgraph = array();
+while($r = mysql_fetch_assoc($queryforgraph)) {
+    $tempgraph = array();
+	
+    // the following line will be used to slice the Pie chart
+    $tempgraph[] = array('v' => (string) $r['lastsampleat']); 
+
+    // Values of each slice
+    $tempgraph[] = array('v' => (int) $r['avguptimeweek']); 
+    $rowsgraph[] = array('c' => $tempgraph);
+}
+
+$tablegraph['rows'] = $rowsgraph;
+$jsonTable = json_encode($tablegraph);
+//echo $jsonTable;
+
+
+
+echo <<<_END
+ 
+    <script type="text/javascript">
+
+    // Load the Visualization API and the piechart package.
+    google.load('visualization', '1', {'packages':['corechart']});
+
+    // Set a callback to run when the Google Visualization API is loaded.
+    google.setOnLoadCallback(drawChart);
+
+    function drawChart() {
+
+      // Create our data table out of JSON data loaded from server.
+      var data = new google.visualization.DataTable(<?=$jsonTable?>);
+      var options = {
+           title: 'Date vs Percentage',
+          is3D: 'true',
+          width: 800,
+          height: 400,
+		   animation:{  duration: 1000, easing: 'out'}
+        };
+      // Instantiate and draw our chart, passing in some options.
+      // Do not forget to check your div ID
+      var chart = new google.visualization.LineChart(document.getElementById('chart_div'));
+      chart.draw(data, options);
+	 // setInterval(drawChart, 500 );
+    }
+    </script>
+<div class="dashcontainer">
+<h3 class="monitorsummary">Monitor Summary</h3>
+<table   style="width:54%;margin:40px 0px 0px 50px;height:135px;padding:10px;line-height:50px;text-align:right;font-size:12px;font-family:Arial;border-collapse:collapse;border-bottom:1px solid #d9d5be" id="my-orders-table">
+ 
+<thead style="font-size:12px;color:#444444;vertical-align:middle;border-bottom:2px solid #444444">
+            <tr>
+                <th>Sno.</th>
+                <th>Date</th>
+                <th>Status</th>
+		  <th>Last Error At</th>
+		  <th>Avg Up Time Week(%)</th>
+		  <th>Avg Load Time Day (ms)</th>
+             <!--   <th>Sample time</span></th>
+                <th>Status</th>
+                <th>&nbsp;</th>-->
+            </tr>
+        </thead>
+        <tbody>
+_END;
+echo "<div id='chart_div'></div>";
+for($i=0;$i<3;$i++)
+	{	
+		$rowqfd=mysql_fetch_row($resultqfd);
+		echo <<<_END
+                           <tr style="border-bottom:1px solid #d9d5be">
+                    <td>
+_END;
+echo $i+1;
+echo <<<_END
+</td>
+                    <td>
+_END;
+$date = substr($rowqfd[0],0,10);
+echo $date;
+//echo $rowqfd[0];
+echo <<<_END
+</td>
+                  <td>
+_END;
+if($rowqfd[1]=="SUCCESS")
+{
+echo <<<_END
+<div class="data-status active"></div>
+_END;
+}
+elseif($rowqfd[1]=="ERROR")
+{
+echo <<<_END
+<div class="data-status alerting"></div>
+_END;
+}
+else
+{
+echo <<<_END
+<div class="data-status off"></div>
+_END;
+}
+echo <<<_END
+                 </td>
+                  <td>
+_END;
+$date = substr($rowqfd[2],0,10);
+echo $date;
+//echo $rowqfd[2];
+echo <<<_END
+                 </td>
+                  <td>
+_END;
+echo $rowqfd[3];
+echo <<<_END
+                 </td>
+                  <td>
+_END;
+echo $rowqfd[4];
+echo <<<_END
+                 </td>
+                  <td>
+
+                 </td>
+</tr>
+_END;
+}
+echo <<<_END
+</tbody>
+</table>
+
+_END;
+ 
+}
+;
+?></strong></p>
+
+</div>
+
+   <p>
+<?php echo $this->__('From your My Account Dashboard you have the ability to view a snapshot of your recent account activity and update your account information. Select a link below to view or edit information.') ?></p>
+    <div id="chart_div"></div>
+
+</div>
