@@ -1,39 +1,5 @@
 <?php
-//<div class="welcome-msg">
-//<p class="hello"><strong>
-
 require_once('chargebee-php-1.2.3/lib/ChargeBee.php');
-//require_once('\C:\chargebee-php-master\ChargeBee.php');
-//require 'ChargeBee.php';
-/**
- * Magento
- *
- * NOTICE OF LICENSE
- *
- * This source file is subject to the Academic Free License (AFL 3.0)
- * that is bundled with this package in the file LICENSE_AFL.txt.
- * It is also available through the world-wide-web at this URL:
- * http://opensource.org/licenses/afl-3.0.php
- * If you did not receive a copy of the license and are unable to
- * obtain it through the world-wide-web, please send an email
- * to license@magentocommerce.com so we can send you a copy immediately.
- *
- * DISCLAIMER
- *
- * Do not edit or add to this file if you wish to upgrade Magento to newer
- * versions in the future. If you wish to customize Magento for your
- * needs please refer to http://www.magentocommerce.com for more information.
- *
- * @category    design
- * @package     base_default
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
- * @license     http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
- */
-//$customer = Mage::getSingleton('core/resource')->getConnection('core_write');
-//if($customer = Mage::getSingleton('customer/session')->isLoggedIn()) {
-  //  $customerData = Mage::getModel('customer/customer')->load($customer->getId())->getData();
-    //print_r($customerData);
-//
 ?>
 <!--Load the Ajax API-->
     <script type="text/javascript" src="https://www.google.com/jsapi"></script>
@@ -43,16 +9,10 @@ require_once('chargebee-php-1.2.3/lib/ChargeBee.php');
 <?php
 $id=$this->getId();
 $sgc = Mage::getSingleton('customer/session')->getCustomer();
-//echo "kkk-".$sgc->getEntityId()."8888888888888888888888888";
-//$id=$sgc->getEntityId();
 $email= $sgc->getEmail();
 $name = $sgc -> getName();
 $startdate= time();
-//$email="ajs@adfghgfhg.com";
 $enddate = time ( ) + (30 * 24 *60*60);
-//$name= "manjesh kumarsdfsd";
-//$id=1000;
-
 //mysql login
 	$db_hostname = 'localhost';
 	$db_database = 'geckotsd';	
@@ -90,10 +50,6 @@ $subscription = $result->subscription();
 
 $customer = $result->customer();
 $card = $result->card(); 
-//$id=$this->getId();
-//$sgc = Mage::getSingleton('customer/session')->getCustomer();
-//echo "kkk-".$sgc->getEntityId()."8888888888888888888888888";
-
 $id=$sgc->getEntityId();
 //echo $id;
 echo $email;
@@ -124,18 +80,15 @@ for ($j = 0 ; $j < $rows ; ++$j)
         $row = mysql_fetch_row($result);
 //        var_dump($row);
 	echo $row[0];
-
   	$queryforgraph = mysql_query("SELECT SUBSTRING(lastsampleat,1,CHAR_LENGTH(lastsampleat)-8) AS lastsampleat,avguptimeweek FROM selenium_script_data where selenium_id='".$row[0]."' order by lastsampleat ASC");
        $resultforgraph = mysql_fetch_row($queryforgraph);
 	$queryfordata = "select lastsampleat,generalstatus,lasterrorat,avguptimeweek,avgLoadtimeday from selenium_script_data where selenium_id='".$row[0]."' order by sno DESC";
 	$resultqfd = mysql_query($queryfordata);
-     
-
-$rowsgraph = array();
-//flag is not needed
-$flaggraph = true;
-$tablegraph = array();
-$tablegraph['cols'] = array(
+	$rowsgraph = array();
+	//flag is not needed
+	$flaggraph = true;
+	$tablegraph = array();
+	$tablegraph['cols'] = array(
 
     // Labels for your chart, these represent the column titles
     // Note that one column is in "string" format and another one is in "number" format as pie chart only required "numbers" for calculating percentage and string will be used for column title
