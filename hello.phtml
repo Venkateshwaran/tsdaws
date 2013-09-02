@@ -2,145 +2,127 @@
 require_once('chargebee-php-1.2.3/lib/ChargeBee.php');
 ?>
 <!--Load the Ajax API-->
-    <script type="text/javascript" src="https://www.google.com/jsapi"></script>
-    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+<script type="text/javascript" src="https://www.google.com/jsapi"></script>
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
 <div class="welcome-msg">
-<p class="hello"><strong>
+<p class="hello">
 <?php
-$id=$this->getId();
-$sgc = Mage::getSingleton('customer/session')->getCustomer();
-$email= $sgc->getEmail();
-$name = $sgc -> getName();
-$startdate= time();
-$enddate = time ( ) + (30 * 24 *60*60);
+	$id=$this->getId();
+	$sgc = Mage::getSingleton('customer/session')->getCustomer();
+	$email= $sgc->getEmail();
+	$name = $sgc -> getName();
+	$startdate= time();
+	$enddate = time ( ) + (30 * 24 *60*60);
 //mysql login
 	$db_hostname = 'localhost';
 	$db_database = 'geckotsd';	
 	$db_username = 'root';
 	$db_password = 'semester123';
 // connect to testsitedaily db
-        $db_server = mysql_connect($db_hostname, $db_username, $db_password);
-        if (!$db_server) die("Unable to connect to MySQL: " . mysql_error());
-        mysql_select_db($db_database)
-        or die("Unable to select database: " . mysql_error());
+    $db_server = mysql_connect($db_hostname, $db_username, $db_password);
+    if (!$db_server) die("Unable to connect to MySQL: " . mysql_error());
+    mysql_select_db($db_database)
+    or die("Unable to select database: " . mysql_error());
 	$email = mysql_real_escape_string($email);
-
 	$query_to_check_subscription_status="Select COUNT(*) as total_count from subscribed_customers where email='$email'";
-        $sub_result = mysql_query($query_to_check_subscription_status);
-        if (!$sub_result) die ("Database access failed: " . mysql_error());
+    $sub_result = mysql_query($query_to_check_subscription_status);
+    if (!$sub_result) die ("Database access failed: " . mysql_error());
 	$row = mysqli_fetch_object($sub_result);
 	$is_subs= $row->total_count;
-if($is_subs==0)
-
-{ChargeBee_Environment::configure("testsitedaily-test","MjcuT8DoBoEL2IWLoTjgeUoUJ66OvUpsd");
-
-
-$result = ChargeBee_Subscription::create(array(
-  "id"=>$id,
-  "planId" => "tsd", 
-  "customer" => array(
-    "email" => $email, 
-    "firstName" => $fname, 
-    "lastName" => $lname,
-    "trial_start"=> $startdate,
-    "trial_end"=> $enddate
-  )));
-  
-$subscription = $result->subscription();
-
-$customer = $result->customer();
-$card = $result->card(); 
-$id=$sgc->getEntityId();
-//echo $id;
-echo $email;
-}
-
-// query for super account script ids
-if($id==2)
-{
-	 $query = "select script_id from selenium_scripts";
-        $result = mysql_query($query);
-        if (!$result) die ("Database access failed: " . mysql_error());
-}
-else{
-// query for script ids
-        $query = "select script_id from selenium_scripts where customer_id=".$id;
-        $result = mysql_query($query);
-        if (!$result) die ("Database access failed: " . mysql_error());
-}
-// number of rows returned
+	if($is_subs==0)
+		{
+			ChargeBee_Environment::configure("testsitedaily-test","MjcuT8DoBoEL2IWLoTjgeUoUJ66OvUpsd");
+			$result = ChargeBee_Subscription::create(array(
+			"id"=>$id,
+			"planId" => "tsd", 
+			"customer" => array(
+		    "email" => $email, 
+		    "firstName" => $fname, 
+		    "lastName" => $lname,
+		    "trial_start"=> $startdate,
+		    "trial_end"=> $enddate
+			)));
+			$subscription = $result->subscription();
+			$customer = $result->customer();
+			$card = $result->card(); 
+			$id=$sgc->getEntityId();
+			//echo $id;
+			echo $email;
+		}
+		// query for super account script ids
+		if($id==2)
+		{
+		   $query = "select script_id from selenium_scripts";
+	       $result = mysql_query($query);
+     	   if (!$result) die ("Database access failed: " . mysql_error());
+		}
+		else
+		{
+			// query for script ids
+	        $query = "select script_id from selenium_scripts where customer_id=".$id;
+	        $result = mysql_query($query);
+	        if (!$result) die ("Database access failed: " . mysql_error());
+		}
+		// number of rows returned
         $rows = mysql_num_rows($result);
-//echo $rows;
-if($rows==0)
-{
-	echo " </br>Welcome to the family! We are processing your request and your script will be ready shortly.</br></br>";
-}
-for ($j = 0 ; $j < $rows ; ++$j)
-{
-        $row = mysql_fetch_row($result);
-//        var_dump($row);
-	echo $row[0];
-  	$queryforgraph = mysql_query("SELECT SUBSTRING(lastsampleat,1,CHAR_LENGTH(lastsampleat)-8) AS lastsampleat,avguptimeweek FROM selenium_script_data where selenium_id='".$row[0]."' order by lastsampleat ASC");
-       $resultforgraph = mysql_fetch_row($queryforgraph);
-	$queryfordata = "select lastsampleat,generalstatus,lasterrorat,avguptimeweek,avgLoadtimeday from selenium_script_data where selenium_id='".$row[0]."' order by sno DESC";
-	$resultqfd = mysql_query($queryfordata);
-	$rowsgraph = array();
-	//flag is not needed
-	$flaggraph = true;
-	$tablegraph = array();
-	$tablegraph['cols'] = array(
-
-    // Labels for your chart, these represent the column titles
-    // Note that one column is in "string" format and another one is in "number" format as pie chart only required "numbers" for calculating percentage and string will be used for column title
-    array('label' => 'Date', 'type' => 'string'),
-    array('label' => 'Percentage', 'type' => 'number')
-
-);
-
-$rowsgraph = array();
-while($r = mysql_fetch_assoc($queryforgraph)) {
-    $tempgraph = array();
-	
-    // the following line will be used to slice the Pie chart
-    $tempgraph[] = array('v' => (string) $r['lastsampleat']); 
-
-    // Values of each slice
-    $tempgraph[] = array('v' => (int) $r['avguptimeweek']); 
-    $rowsgraph[] = array('c' => $tempgraph);
-}
-
-$tablegraph['rows'] = $rowsgraph;
-$jsonTable = json_encode($tablegraph);
-//echo $jsonTable;
-
-
-
+		//echo $rows;
+		if($rows==0)
+		{
+			echo " </br>Welcome to the family! We are processing your request and your script will be ready shortly.</br></br>";
+		}
+		for ($j = 0 ; $j < $rows ; ++$j)
+		{
+        	$row = mysql_fetch_row($result);
+			//var_dump($row);
+			echo $row[0];
+		  	$queryforgraph = mysql_query("SELECT SUBSTRING(lastsampleat,1,CHAR_LENGTH(lastsampleat)-8) AS lastsampleat,avguptimeweek FROM selenium_script_data where selenium_id='".$row[0]."' order by lastsampleat ASC");
+    		$resultforgraph = mysql_fetch_row($queryforgraph);
+			$queryfordata = "select lastsampleat,generalstatus,lasterrorat,avguptimeweek,avgLoadtimeday from selenium_script_data where selenium_id='".$row[0]."' order by sno DESC";
+			$resultqfd = mysql_query($queryfordata);
+			$rowsgraph = array();
+			//flag is not needed
+			$flaggraph = true;
+			$tablegraph = array();
+			$tablegraph['cols'] = array(
+		    // Labels for your chart, these represent the column titles
+		    // Note that one column is in "string" format and another one is in "number" format as pie chart only required "numbers" for calculating percentage and string will be used for column title
+    		array('label' => 'Date', 'type' => 'string'),
+		    array('label' => 'Percentage', 'type' => 'number')
+			);	
+			$rowsgraph = array();
+			while($r = mysql_fetch_assoc($queryforgraph)) 
+			{
+		    	$tempgraph = array();
+			    // the following line will be used to slice the Pie chart
+			    $tempgraph[] = array('v' => (string) $r['lastsampleat']); 
+			    // Values of each slice
+			    $tempgraph[] = array('v' => (int) $r['avguptimeweek']); 
+			    $rowsgraph[] = array('c' => $tempgraph);
+			}
+			$tablegraph['rows'] = $rowsgraph;
+			$jsonTable = json_encode($tablegraph);
+			//echo $jsonTable;
 echo <<<_END
- 
     <script type="text/javascript">
-
     // Load the Visualization API and the piechart package.
     google.load('visualization', '1', {'packages':['corechart']});
-
     // Set a callback to run when the Google Visualization API is loaded.
     google.setOnLoadCallback(drawChart);
-
     function drawChart() {
-
       // Create our data table out of JSON data loaded from server.
       var data = new google.visualization.DataTable(<?=$jsonTable?>);
       var options = {
            title: 'Date vs Percentage',
-          is3D: 'true',
-          width: 800,
-          height: 400,
+           is3D: 'true',
+           width: 800,
+           height: 400,
 		   animation:{  duration: 1000, easing: 'out'}
-        };
+           };
       // Instantiate and draw our chart, passing in some options.
       // Do not forget to check your div ID
       var chart = new google.visualization.LineChart(document.getElementById('chart_div'));
       chart.draw(data, options);
-	 // setInterval(drawChart, 500 );
+	 //setInterval(drawChart, 500 );
     }
     </script>
 <div class="dashcontainer">
@@ -162,8 +144,8 @@ echo <<<_END
         </thead>
         <tbody>
 _END;
-echo "<div id='chart_div'></div>";
-for($i=0;$i<3;$i++)
+	echo "<div id='chart_div'></div>";
+	for($i=0;$i<3;$i++)
 	{	
 		$rowqfd=mysql_fetch_row($resultqfd);
 		echo <<<_END
