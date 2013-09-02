@@ -49,32 +49,20 @@ require_once('chargebee-php-1.2.3/lib/ChargeBee.php');
 			//echo $id;
 			echo $email;
 		}
-		// query for super account script ids
-		if($id==2)
-		{
-		   $query = "select script_id from selenium_scripts";
-	       $result = mysql_query($query);
-     	   if (!$result) die ("Database access failed: " . mysql_error());
-		}
-		else
-		{
-			// query for script ids
+// query for script ids
 	        $query = "select script_id from selenium_scripts where customer_id=".$id;
 	        $result = mysql_query($query);
 	        if (!$result) die ("Database access failed: " . mysql_error());
-		}
-		// number of rows returned
+			// number of rows returned
         $rows = mysql_num_rows($result);
 		//echo $rows;
 		if($rows==0)
 		{
 			echo " </br>Welcome to the family! We are processing your request and your script will be ready shortly.</br></br>";
 		}
-		for ($j = 0 ; $j < $rows ; ++$j)
-		{
-        	$row = mysql_fetch_row($result);
+		 	$row = mysql_fetch_row($result);
 			//var_dump($row);
-			echo $row[0];
+			//echo $row[0];
 		  	$queryforgraph = mysql_query("SELECT SUBSTRING(lastsampleat,1,CHAR_LENGTH(lastsampleat)-8) AS lastsampleat,avguptimeweek FROM selenium_script_data where selenium_id='".$row[0]."' order by lastsampleat ASC");
     		$resultforgraph = mysql_fetch_row($queryforgraph);
 			$queryfordata = "select lastsampleat,generalstatus,lasterrorat,avguptimeweek,avgLoadtimeday from selenium_script_data where selenium_id='".$row[0]."' order by sno DESC";
@@ -110,7 +98,7 @@ echo <<<_END
     google.setOnLoadCallback(drawChart);
     function drawChart() {
       // Create our data table out of JSON data loaded from server.
-      var data = new google.visualization.DataTable(<?=$jsonTable?>);
+      var data = new google.visualization.DataTable($jsonTable);
       var options = {
            title: 'Date vs Percentage',
            is3D: 'true',
@@ -125,8 +113,10 @@ echo <<<_END
 	 //setInterval(drawChart, 500 );
     }
     </script>
+
 <div class="dashcontainer">
 <h3 class="monitorsummary">Monitor Summary</h3>
+
 <table   style="width:54%;margin:40px 0px 0px 50px;height:135px;padding:10px;line-height:50px;text-align:right;font-size:12px;font-family:Arial;border-collapse:collapse;border-bottom:1px solid #d9d5be" id="my-orders-table">
  
 <thead style="font-size:12px;color:#444444;vertical-align:middle;border-bottom:2px solid #444444">
@@ -143,8 +133,9 @@ echo <<<_END
             </tr>
         </thead>
         <tbody>
+	<div id="chart_div"></div>
+
 _END;
-	echo "<div id='chart_div'></div>";
 	for($i=0;$i<3;$i++)
 	{	
 		$rowqfd=mysql_fetch_row($resultqfd);
@@ -213,14 +204,11 @@ echo <<<_END
 
 _END;
  
-}
-;
+
 ?></strong></p>
 
 </div>
 
    <p>
 <?php echo $this->__('From your My Account Dashboard you have the ability to view a snapshot of your recent account activity and update your account information. Select a link below to view or edit information.') ?></p>
-    <div id="chart_div"></div>
-
 </div>
